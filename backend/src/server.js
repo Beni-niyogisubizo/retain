@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
+import { pool } from './config/db.js';
 
 const app = express();
 const port = Number(process.env.PORT || 3000);
@@ -26,6 +27,15 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(port, () => {
-  console.log(`Retain API running at http://localhost:${port}`);
-});
+try {
+  await pool.query('SELECT 1');
+  console.log('MySQL connection successful');
+
+  app.listen(port, () => {
+    console.log(`Retain API running at http://localhost:${port}`);
+  });
+} catch (err) {
+  console.error('Could not connect to MySQL:', err.code || err.message);
+  await pool.end();
+  process.exit(1);
+}
