@@ -2,6 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import { pool } from './config/db.js';
+import authRoutes from './routes/authRoutes.js';
 
 const app = express();
 const port = Number(process.env.PORT || 3000);
@@ -15,15 +16,26 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Retain API is running' });
 });
 
+app.use('/api/auth', authRoutes);
+
 app.use((req, res) => {
   res.status(404).json({ message: 'Endpoint not found' });
 });
 
 app.use((err, req, res, next) => {
-  console.error(err.message);
-  const status = err.status === 400 ? 400 : 500;
+  if (res.headersSent) {
+    return next(err);
+  }
+
+  console.error(err.code || err.message);
+  const status = err.status === 400
+    ? 400
+    : err.status === 413 ? 413 : 500;
+
   res.status(status).json({
-    message: status === 400 ? 'Invalid request body' : 'Internal server error',
+    message: status === 400
+      ? 'Invalid request body'
+      : status === 413 ? 'Request body too large' : 'Internal server error',
   });
 });
 
