@@ -105,19 +105,129 @@ export async function listExpenses(req, res) {
     });
   }
 
+  const keys = [
+    'search', 'category_id', 'payment_method',
+    'date_from', 'date_to', 'min_amount', 'max_amount', 'sort',
+  ];
+
+  for (const key of keys) {
+    if (req.query[key] !== undefined && typeof req.query[key] !== 'string') {
+      return res.status(400).json({ message: `Invalid ${key}` });
+    }
+  }
+
+  const search = (req.query.search ?? '').trim();
+  const category = req.query.category_id ?? '';
+  const payment = req.query.payment_method ?? '';
+  const dateFrom = req.query.date_from ?? '';
+  const dateTo = req.query.date_to ?? '';
+  const minAmount = req.query.min_amount ?? '';
+  const maxAmount = req.query.max_amount ?? '';
+  const sort = req.query.sort ?? 'date_desc';
+
+  const orders = {
+    date_desc: 'e.expense_date DESC, e.id DESC',
+    date_asc: 'e.expense_date ASC, e.id ASC',
+    amount_desc: 'e.amount DESC, e.id DESC',
+    amount_asc: 'e.amount ASC, e.id ASC',
+  };
+
+  if (!Object.hasOwn(orders, sort)) {
+    return res.status(400).json({ message: 'Invalid sorting option' });
+  }
+
+  if (search.length > 150) {
+    return res.status(400).json({ message: 'Search must not exceed 150 characters' });
+  }
+
+  if (category && category !== 'uncategorized' && !readId(category)) {
+    return res.status(400).json({ message: 'Invalid category ID' });
+  }
+
+  if (payment && !paymentMethods.includes(payment)) {
+    return res.status(400).json({ message: 'Invalid payment method' });
+  }
+
+  if ((dateFrom && !validDate(dateFrom)) || (dateTo && !validDate(dateTo))) {
+    return res.status(400).json({ message: 'Enter valid dates in YYYY-MM-DD format' });
+  }
+
+  if (dateFrom && dateTo && dateFrom > dateTo) {
+    return res.status(400).json({ message: 'Start date must not follow end date' });
+  }
+
+  const amountPattern = /^\d{1,10}(\.\d{1,2})?$/;
+
+  if (
+    (minAmount && !amountPattern.test(minAmount)) ||
+    (maxAmount && !amountPattern.test(maxAmount))
+  ) {
+    return res.status(400).json({
+      message: 'Amount filters must be nonnegative with at most 2 decimal places',
+    });
+  }
+
+  if (minAmount && maxAmount && Number(minAmount) > Number(maxAmount)) {
+    return res.status(400).json({
+      message: 'Minimum amount must not exceed maximum amount',
+    });
+  }
+
+  const conditions = ['e.user_id = ?'];
+  const params = [req.user.id];
+
+  if (search) {
+    conditions.push('(LOCATE(?, e.title) > 0 OR LOCATE(?, COALESCE(e.notes, \'\')) > 0)');
+    params.push(search, search);
+  }
+
+  if (category === 'uncategorized') {
+    conditions.push('e.category_id IS NULL');
+  } else if (category) {
+    conditions.push('e.category_id = ?');
+    params.push(Number(category));
+  }
+
+  if (payment) {
+    conditions.push('e.payment_method = ?');
+    params.push(payment);
+  }
+
+  if (dateFrom) {
+    conditions.push('e.expense_date >= ?');
+    params.push(dateFrom);
+  }
+
+  if (dateTo) {
+    conditions.push('e.expense_date <= ?');
+    params.push(dateTo);
+  }
+
+  if (minAmount) {
+    conditions.push('e.amount >= ?');
+    params.push(minAmount);
+  }
+
+  if (maxAmount) {
+    conditions.push('e.amount <= ?');
+    params.push(maxAmount);
+  }
+
+  const where = `WHERE ${conditions.join(' AND ')}`;
+
   const [counts] = await pool.execute(
-    'SELECT COUNT(*) AS total FROM expenses WHERE user_id = ?',
-    [req.user.id]
+    `SELECT COUNT(*) AS total FROM expenses e ${where}`,
+    params
   );
+
   const total = Number(counts[0].total);
   const offset = (page - 1) * pageSize;
 
   const [expenses] = await pool.query(
-    `${expenseSelect}
-     WHERE e.user_id = ?
-     ORDER BY e.expense_date DESC, e.id DESC
+    `${expenseSelect} ${where}
+     ORDER BY ${orders[sort]}
      LIMIT ? OFFSET ?`,
-    [req.user.id, pageSize, offset]
+    [...params, pageSize, offset]
   );
 
   res.json({
