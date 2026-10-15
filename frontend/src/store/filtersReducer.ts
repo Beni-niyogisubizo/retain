@@ -19,7 +19,7 @@ export const initialFilters: ExpenseFilters = {
   dateTo: '',
   minAmount: '',
   maxAmount: '',
-  sort: 'date_des',
+  sort: 'date_desc',
   page: 1,
   pageSize: 10,
 };
