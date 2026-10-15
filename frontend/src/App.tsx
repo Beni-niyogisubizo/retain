@@ -2,6 +2,7 @@ import { Link, Navigate, Route, Routes } from 'react-router-dom';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { useAuth } from './hooks/useAuth';
 import { AuthPage } from './pages/AuthPage';
+import { ExpensesPage } from './pages/ExpensesPage';
 
 function DashboardPage() {
   const { user, signOut } = useAuth();
@@ -14,6 +15,7 @@ function DashboardPage() {
       </header>
 
       <h1>Welcome, {user?.name}</h1>
+      <Link to="/expenses">Manage expenses</Link>
       <p>Your account is ready. Expense and budget features are coming next.</p>
 
       {user?.role === 'admin' && <Link to="/admin">Open admin dashboard</Link>}
@@ -40,6 +42,7 @@ export default function App() {
 
       <Route element={<ProtectedRoute />}>
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/expenses" element={<ExpensesPage />} />
       </Route>
 
       <Route element={<ProtectedRoute adminOnly />}>
