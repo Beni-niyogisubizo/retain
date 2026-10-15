@@ -125,3 +125,39 @@ th { white-space: nowrap; }
   overflow: hidden;
   clip-path: inset(50%);
 }
+
+.expense-form-card {
+  padding: 24px;
+  margin-bottom: 24px;
+  border-radius: 12px;
+  background: white;
+}
+
+fieldset {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #bacac5;
+  border-radius: 8px;
+  font: inherit;
+  resize: vertical;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+@media (max-width: 480px) {
+  fieldset { grid-template-columns: 1fr; }
+}
