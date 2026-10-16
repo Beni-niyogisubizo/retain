@@ -1,27 +1,8 @@
+import { DashboardPage } from './pages/DashboardPage';
 import { Link, Navigate, Route, Routes } from 'react-router-dom';
 import { ProtectedRoute } from './components/ProtectedRoute';
-import { useAuth } from './hooks/useAuth';
 import { AuthPage } from './pages/AuthPage';
 import { ExpensesPage } from './pages/ExpensesPage';
-
-function DashboardPage() {
-  const { user, signOut } = useAuth();
-
-  return (
-    <main className="dashboard">
-      <header className="dashboard-header">
-        <span className="brand">Retain</span>
-        <button onClick={signOut}>Sign out</button>
-      </header>
-
-      <h1>Welcome, {user?.name}</h1>
-      <Link to="/expenses">Manage expenses</Link>
-      <p>Your account is ready. Expense and budget features are coming next.</p>
-
-      {user?.role === 'admin' && <Link to="/admin">Open admin dashboard</Link>}
-    </main>
-  );
-}
 
 function AdminPage() {
   return (

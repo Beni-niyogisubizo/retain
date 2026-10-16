@@ -161,3 +161,41 @@ textarea {
 @media (max-width: 480px) {
   fieldset { grid-template-columns: 1fr; }
 }
+
+.month-picker {
+  max-width: 260px;
+  margin-bottom: 24px;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 16px;
+}
+
+.summary-card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.summary-card h2 { font-size: 18px; margin-top: 0; }
+.summary-value { font-size: 30px; font-weight: bold; margin: 16px 0; }
+.budget-progress progress { width: 100%; height: 20px; accent-color: #146c55; }
+
+.summary-list { list-style: none; padding: 0; }
+.summary-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 12px 0;
+  border-bottom: 1px solid #dce5e1;
+}
+.summary-list span { overflow-wrap: anywhere; min-width: 0; }
+.summary-list strong { white-space: nowrap; }
+.dashboard-header .actions { align-items: center; gap: 16px; }
+
+@media (max-width: 480px) {
+  .dashboard-header { flex-wrap: wrap; }
+}
