@@ -1,18 +1,9 @@
+import { AdminPage } from './pages/AdminPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { Link, Navigate, Route, Routes } from 'react-router-dom';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AuthPage } from './pages/AuthPage';
 import { ExpensesPage } from './pages/ExpensesPage';
-
-function AdminPage() {
-  return (
-    <main className="dashboard">
-      <h1>Admin dashboard</h1>
-      <p>Category management and platform insights are coming next.</p>
-      <Link to="/dashboard">Back to your dashboard</Link>
-    </main>
-  );
-}
 
 export default function App() {
   return (
